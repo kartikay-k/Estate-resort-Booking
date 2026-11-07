@@ -10,6 +10,11 @@ import { Room } from '../models/room.model.js';
 import { User } from '../models/user.model.js';
 
 const base = process.env.API_URL ?? 'http://localhost:5001/api';
+const staffEmail = process.env.SEED_RESERVATIONS_STAFF_EMAIL;
+const staffPassword = process.env.SEED_RESERVATIONS_STAFF_PASSWORD;
+if (!staffEmail || !staffPassword) {
+  throw new Error('SEED_RESERVATIONS_STAFF_EMAIL and SEED_RESERVATIONS_STAFF_PASSWORD are required');
+}
 let passed = 0;
 const assert: (condition: unknown, message: string) => void = (condition, message) => { if (!condition) throw new Error(message); passed++; console.log(`✓ ${message}`); };
 async function request(path: string, options: RequestInit = {}) {
@@ -103,7 +108,7 @@ async function main() {
   assert(guestLookup.reference === booking.reference && guestLookup.room?.name, 'POST /bookings/lookup verifies booking reference and matching email');
   const privateLookup = await rawRequest('/bookings/lookup', post({ reference: booking.reference, email: 'not-the-booking-email@example.test' }));
   assert(privateLookup.status === 404, 'POST /bookings/lookup hides reservation details when verification fails');
-  const csvResponse = await fetch(`${base}/admin/bookings/export.csv?date=${checkIn}`, { headers: auth((await request('/auth/login', post({ email: process.env.SEED_ADMIN_EMAIL ?? 'admin@estatestay.local', password: process.env.SEED_ADMIN_PASSWORD ?? 'EstateStay-Admin-2026!' }))).token) });
+  const csvResponse = await fetch(`${base}/admin/bookings/export.csv?date=${checkIn}`, { headers: auth((await request('/auth/login', post({ email: staffEmail, password: staffPassword }))).token) });
   assert(csvResponse.ok && (await csvResponse.text()).includes(booking.reference), 'GET /admin/bookings/export.csv exports daily reservation CSV');
   const pendingPayment = await request(`/bookings/${booking._id}/test-payment`, { ...post({ outcome: 'pending' }), headers: auth(guest.token) });
   assert(pendingPayment.booking.paymentStatus === 'pending' && pendingPayment.booking.status === 'pending', 'Test payment pending state persists without confirmation');
@@ -123,7 +128,7 @@ async function main() {
   const complaint = await request('/enquiries', post({ name: 'Concerned Guest', email: `event-complaint-${suffix}@example.test`, subject: 'Complaint about our stay', message: 'I want to complain about the service and request a manager.', privacyAccepted: true }));
   assert(complaint.alertGM === true, 'New complaints automatically raise a GM alert');
 
-  const admin = await request('/auth/login', post({ email: process.env.SEED_RESERVATIONS_STAFF_EMAIL ?? process.env.SEED_ADMIN_EMAIL ?? 'admin@estatestay.local', password: process.env.SEED_RESERVATIONS_STAFF_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'EstateStay-Admin-2026!' }));
+  const admin = await request('/auth/login', post({ email: staffEmail, password: staffPassword }));
   assert(admin.user.role === 'reservations_staff', 'POST /auth/login authenticates Reservations Staff');
   const adminToken = admin.token;
   const complaintClearAttempt = await request(`/admin/enquiries/${complaint.id}`, { ...patch({ alertGM: false }), headers: auth(adminToken) });

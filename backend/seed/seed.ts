@@ -13,6 +13,12 @@ const DAY = 86_400_000;
 const baseDay = (date: Date) => new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 
 async function seed() {
+  const adminEmail = process.env.SEED_RESERVATIONS_STAFF_EMAIL;
+  const adminPassword = process.env.SEED_RESERVATIONS_STAFF_PASSWORD;
+  if (!adminEmail || !adminPassword) {
+    throw new Error('SEED_RESERVATIONS_STAFF_EMAIL and SEED_RESERVATIONS_STAFF_PASSWORD are required');
+  }
+
   if (!(await connectDatabase())) throw new Error('MongoDB connection required for seed');
 
   console.log('[seed] clearing estate catalogue, rate and inventory collections…');
@@ -60,8 +66,6 @@ async function seed() {
 
   await PromoCode.create({ code: 'ESTATE10', description: '10% off your first estate stay', kind: 'percent', value: 10, maxDiscount: 25000, startsAt: new Date(), endsAt: new Date(Date.now() + 365 * DAY), usageLimit: 500, usedCount: 0, active: true });
 
-  const adminEmail = process.env.SEED_RESERVATIONS_STAFF_EMAIL ?? process.env.SEED_ADMIN_EMAIL ?? 'admin@estatestay.local';
-  const adminPassword = process.env.SEED_RESERVATIONS_STAFF_PASSWORD ?? process.env.SEED_ADMIN_PASSWORD ?? 'EstateStay-Admin-2026!';
   await User.updateOne({ email: adminEmail }, { $set: { name: 'EstateStay Reservations Staff', email: adminEmail, passwordHash: await bcrypt.hash(adminPassword, 12), role: 'reservations_staff', staffDepartment: 'Reservations', isActive: true } }, { upsert: true });
   const staffRoster = [
     { name: 'Maya Rao', email: 'maya.rao@estatestay.local', department: 'Reservations' },

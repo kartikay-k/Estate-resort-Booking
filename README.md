@@ -149,8 +149,8 @@ Authentication is JWT Bearer-token based; public registration always creates a
 console, and GM complaint/low-confidence visibility is provided within that same
 role. Staff users are seeded, never self-registered. Set `JWT_SECRET`,
 `SEED_RESERVATIONS_STAFF_EMAIL`, and `SEED_RESERVATIONS_STAFF_PASSWORD` in
-`backend/.env` before deployment. The default local Reservations Staff login is
-`admin@estatestay.local` / `EstateStay-Admin-2026!`.
+`backend/.env` before running the seed command. Use unique local credentials
+and share reviewer credentials privately; do not commit a staff password.
 
 There are no separate required administrator or GM roles: the core role set is
 `guest` and `reservations_staff`.
@@ -370,9 +370,10 @@ redeploy the API.
 ### Demo checklist / credentials
 
 - Guest: register through the website with a fresh email, then sign in and book.
-- Reservations Staff local seed default: `admin@estatestay.local` /
-  `EstateStay-Admin-2026!`. This is for local demonstrations only; set unique
-  seed credentials before seeding any remote demo environment.
+- Reservations Staff: set `SEED_RESERVATIONS_STAFF_EMAIL` and
+  `SEED_RESERVATIONS_STAFF_PASSWORD` in the ignored backend `.env` file before
+  seeding. The seed command requires these values and does not provide a
+  default account. Share demo credentials privately, never in source control.
 - Test payment is simulated only and never charges money. Test the `success`,
   `failure`, and `pending` outcomes; never enter real card details.
 - Change rates/allotments in staff console and verify availability from a guest
