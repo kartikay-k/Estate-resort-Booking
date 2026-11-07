@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "outDir": "dist",
+    "rootDir": ".",
+    "types": ["node"],
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "sourceMap": true
+  },
+  "include": ["server.ts", "app.ts", "config/**/*.ts", "controllers/**/*.ts", "middleware/**/*.ts", "models/**/*.ts", "routes/**/*.ts", "services/**/*.ts", "utils/**/*.ts", "seed/**/*.ts", "scripts/**/*.ts"]
+}
