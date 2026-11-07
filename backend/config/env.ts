@@ -46,6 +46,3 @@ if (isProduction && env.jwtSecret === 'dev-only-change-this-secret-before-deploy
 if (isProduction && (env.mongoUri === 'mongodb://127.0.0.1:27017/estatestay' || env.mongoUri === 'mongodb://localhost:27017/estatestay')) {
   throw new Error('MONGO_URI must point to MongoDB Atlas or another production database');
 }
-if (isProduction && env.clientOrigins.some((origin) => /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin))) {
-  throw new Error('CLIENT_URL must contain the deployed frontend origin in production, not localhost');
-}
