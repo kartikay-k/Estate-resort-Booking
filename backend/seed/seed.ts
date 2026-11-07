@@ -74,7 +74,7 @@ async function seed() {
 
   await seedSampleEnquiries();
   console.log(`[seed] complete: ${rooms.length - 12} rooms, 12 villas, ${plans.length} rate plans, 365-day rates/inventory, 140-person operation represented by ${staffRoster.length} departmental demo accounts, 3 sample enquiries.`);
-  console.log(`[seed] admin: ${adminEmail} / ${adminPassword} (change immediately outside local development)`);
+  console.log(`[seed] Reservations Staff account created for ${adminEmail}`);
 }
 
 seed().catch((error) => { console.error('[seed] failed:', error); process.exitCode = 1; }).finally(() => disconnectDatabase());
