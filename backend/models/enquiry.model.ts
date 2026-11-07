@@ -1,0 +1,38 @@
+import { Schema, model } from 'mongoose';
+
+const enquirySchema = new Schema({
+  reference: { type: String, required: true, unique: true, index: true },
+  name: { type: String, required: true, trim: true, maxlength: 120 },
+  email: { type: String, required: true, lowercase: true, trim: true },
+  phone: { type: String, trim: true, maxlength: 30 },
+  subject: { type: String, required: true, trim: true, maxlength: 180 },
+  message: { type: String, required: true, trim: true, maxlength: 5000 },
+  source: { type: String, enum: ['website', 'email', 'whatsapp'], default: 'website', index: true },
+  category: { type: String, enum: ['booking', 'wedding', 'corporate', 'experience', 'complaint', 'general', 'unsorted'], default: 'unsorted', index: true },
+  status: { type: String, enum: ['unsorted', 'new', 'routed', 'in_progress', 'resolved', 'spam'], default: 'unsorted', index: true },
+  priority: { type: String, enum: ['low', 'normal', 'high', 'urgent'], default: 'normal', index: true },
+  alertGM: { type: Boolean, default: false, index: true },
+  arrivalDate: Date,
+  departureDate: Date,
+  requestedPeriod: { type: String, trim: true, maxlength: 120 },
+  guestCount: { type: Number, min: 1 },
+  nightsRequested: { type: Number, min: 1 },
+  budgetAmount: { type: Number, min: 0 },
+  budgetCurrency: { type: String, uppercase: true, minlength: 3, maxlength: 3 },
+  privacyConsentAt: Date,
+  assignedDepartment: { type: String, trim: true },
+  routing: { department: String, confidence: Number, reason: String },
+  ai: {
+    provider: String,
+    model: String,
+    summary: String,
+    reason: String,
+    confidence: { type: Number, min: 0, max: 1 },
+    manualOverride: { type: Boolean, default: false },
+    classifiedAt: Date,
+    replyDraft: { type: String, maxlength: 5000 },
+    replyDraftedAt: Date,
+  },
+  assignedTo: { type: Schema.Types.ObjectId, ref: 'User' },
+}, { timestamps: true });
+export const Enquiry = model('Enquiry', enquirySchema);
