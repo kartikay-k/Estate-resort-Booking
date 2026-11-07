@@ -17,6 +17,7 @@
     "migrate:roles": "tsx scripts/migrateReservationsStaff.ts"
   },
   "dependencies": {
+    "@types/node": "^26.6.6",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.6",
     "dotenv": "^18.0.9",
@@ -32,7 +33,6 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/morgan": "^1.9.10",
-    "@types/node": "^26.6.6",
     "tsx": "^4.23.15",
     "typescript": "^7.0.2"
   }
