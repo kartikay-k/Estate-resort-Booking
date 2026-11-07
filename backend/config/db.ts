@@ -14,6 +14,17 @@ import { env } from './env.js';
 mongoose.set('strictQuery', true);
 
 const CONNECTION_TIMEOUT_MS = 8_000;
+let connectionAttempt: Promise<boolean> | undefined;
+
+mongoose.connection.on('connected', () =>
+  console.log(`[db] MongoDB connected → ${mongoose.connection.name}`),
+);
+mongoose.connection.on('disconnected', () =>
+  console.warn('[db] MongoDB disconnected'),
+);
+mongoose.connection.on('error', (err) =>
+  console.error('[db] MongoDB error:', err.message),
+);
 
 const stateLabel = (readyState: number): string => {
   switch (readyState) {
@@ -30,38 +41,37 @@ const stateLabel = (readyState: number): string => {
   }
 };
 
-export async function connectDatabase(): Promise<boolean> {
-  mongoose.connection.on('connected', () =>
-    console.log(`[db] MongoDB connected → ${mongoose.connection.name}`),
-  );
-  mongoose.connection.on('disconnected', () =>
-    console.warn('[db] MongoDB disconnected'),
-  );
-  mongoose.connection.on('error', (err) =>
-    console.error('[db] MongoDB error:', err.message),
-  );
+export function connectDatabase(): Promise<boolean> {
+  if (mongoose.connection.readyState === 1) return Promise.resolve(true);
+  if (connectionAttempt) return connectionAttempt;
 
-  try {
-    await mongoose.connect(env.mongoUri, {
-      serverSelectionTimeoutMS: CONNECTION_TIMEOUT_MS,
-    });
-    return true;
-  } catch (err) {
-    console.error(
-      [
-        '\n════════════════════════════════════════════════════════',
-        '[db] Could not connect to MongoDB. The API is still running,',
-        '     but /api/health will report the database as "disconnected".',
-        '',
-        '     To fix, either:',
-        '       • run local MongoDB:      mongod --dbpath <data-dir>',
-        '       • use a free Atlas cluster and update MONGO_URI in backend/.env',
-        '════════════════════════════════════════════════════════\n',
-      ].join('\n'),
-    );
-    console.error('[db] Error was:', err instanceof Error ? err.message : err);
-    return false;
-  }
+  connectionAttempt = (async () => {
+    try {
+      await mongoose.connect(env.mongoUri, {
+        serverSelectionTimeoutMS: CONNECTION_TIMEOUT_MS,
+      });
+      return true;
+    } catch (err) {
+      console.error(
+        [
+          '\n════════════════════════════════════════════════════════',
+          '[db] Could not connect to MongoDB. The API is still running,',
+          '     but /api/health will report the database as "disconnected".',
+          '',
+          '     To fix, either:',
+          '       • run local MongoDB:      mongod --dbpath <data-dir>',
+          '       • use a free Atlas cluster and update MONGO_URI in backend/.env',
+          '════════════════════════════════════════════════════════\n',
+        ].join('\n'),
+      );
+      console.error('[db] Error was:', err instanceof Error ? err.message : err);
+      return false;
+    } finally {
+      connectionAttempt = undefined;
+    }
+  })();
+
+  return connectionAttempt;
 }
 
 export async function disconnectDatabase(): Promise<void> {

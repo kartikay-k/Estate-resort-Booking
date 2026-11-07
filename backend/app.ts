@@ -6,6 +6,8 @@ import { env, isProduction } from './config/env.js';
 import { apiRouter } from './routes/index.js';
 import { notFoundHandler } from './middleware/notFound.js';
 import { errorHandler } from './middleware/errorHandler.js';
+import { connectDatabase } from './config/db.js';
+import { failureEnvelope } from './utils/apiResponse.js';
 
 const app = express();
 
@@ -32,6 +34,14 @@ app.get('/', (_req, res) => {
 });
 
 // ── API routes ───────────────────────────────────────────────
+app.use('/api', async (req, res, next) => {
+  const connected = await connectDatabase();
+  if (!connected && req.path !== '/health') {
+    res.status(503).json(failureEnvelope('Database unavailable'));
+    return;
+  }
+  next();
+});
 app.use('/api', apiRouter);
 
 // ── 404 + central error handling (always last) ───────────────

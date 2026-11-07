@@ -108,6 +108,8 @@ curl http://localhost:5001/api/health
 
 The Home page (`http://localhost:5173`) renders this live via Axios —
 a "API online" card with the MongoDB state included.
+The API also initializes the MongoDB connection on demand, so serverless
+deployments such as Vercel connect before serving database-backed requests.
 
 ## Design system
 
